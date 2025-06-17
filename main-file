@@ -1,0 +1,85 @@
+// ────────────────────────────────────────────────────────────────
+//   Widget qui indique « BOSS, VOICI LES NEWS »  • 6 actus sans images sur 2 lignes
+//   + séparateurs gris clair entre chaque item (comme sur le widget Les Echos)
+// ────────────────────────────────────────────────────────────────
+
+const FEEDS = [
+  { url: "https://services.lesechos.fr/rss/les-echos-economie.xml", max: 3 },
+  { url: "https://www.lemonde.fr/rss/une.xml",                    max: 3 }
+];
+
+// coupe le titre en deux lignes avant seuil
+function twoLine(str, maxChars = 40) {
+  if (str.length <= maxChars) return str;
+  let idx = str.lastIndexOf(" ", maxChars);
+  if (idx < 0) idx = maxChars;
+  return str.slice(0, idx) + "\n" + str.slice(idx + 1);
+}
+
+// parse RSS
+async function parseFeed(url, maxItems) {
+  const xml   = await new Request(url).loadString();
+  const items = [...xml.matchAll(/<item>([\s\S]*?)<\/item>/g)];
+  return items.slice(0, maxItems).map(m => {
+    const b = m[1];
+    const t = b.match(/<title><!\[CDATA\[([\s\S]*?)\]\]><\/title>/);
+    const l = b.match(/<link>(.*?)<\/link>/);
+    return {
+      title: t ? t[1] : "[Sans titre]",
+      link:  l ? l[1] : ""
+    };
+  });
+}
+
+// récupère & combine
+let articles = [];
+for (let f of FEEDS) {
+  const arr = await parseFeed(f.url, f.max);
+  articles = articles.concat(arr);
+}
+articles = articles.slice(0, 6);
+
+// construction du widget
+const w = new ListWidget();
+w.backgroundColor = new Color("#1c1c1e");
+w.setPadding(16, 16, 16, 16);
+w.refreshAfterDate = new Date(Date.now() + 60 * 1000);
+
+// en-tête
+const header = w.addStack();
+header.layoutHorizontally();
+const hTitle = header.addText("BOSS, VOICI LES NEWS 🗞️");
+hTitle.font = Font.boldSystemFont(16);
+hTitle.textColor = new Color("#FF0000");
+header.addSpacer();
+const hTime = header.addText(
+  "Maj " + new Date().toLocaleTimeString("fr-FR", {
+    hour: "2-digit", minute: "2-digit"
+  })
+);
+hTime.font = Font.systemFont(10);
+hTime.textColor = Color.lightGray();
+w.addSpacer(12);
+
+// 6 titres, 2 lignes max, avec séparateurs
+for (let i = 0; i < articles.length; i++) {
+  const art = articles[i];
+  
+  const txt = w.addText(twoLine(art.title, 40));
+  txt.font = Font.boldSystemFont(13);
+  txt.textColor = Color.white();
+  txt.lineLimit = 2;
+  txt.url = art.link;
+  w.addSpacer(8);
+  
+  if (i < articles.length - 1) {
+    // séparateur
+    const sep = w.addStack();
+    sep.size = new Size(0, 1);               // hauteur fixe, largeur pleine
+    sep.backgroundColor = Color.lightGray();
+    w.addSpacer(8);
+  }
+}
+
+Script.setWidget(w);
+Script.complete();
