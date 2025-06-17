@@ -20,7 +20,7 @@ Ce script crée un widget iOS 14+ affichant les 6 dernières actualités (texte 
 
 3. Donnez un nom au script, par exemple `NEWS`.
 
-4. Collez l’intégralité du code du "main-file" dans l’éditeur
+4. Collez l’intégralité du code du "main-file" dans l’éditeur, en ajoutant le flux RSS que vous souhaitez dans le code (voir main-file)
 
 5. Appuyez sur **Done** pour enregistrer.
 
