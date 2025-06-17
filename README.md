@@ -46,4 +46,4 @@ Ce script crée un widget iOS 14+ affichant les 6 dernières actualités (texte 
 
 ---
 
-Open-source servez-vous modifiez
+Open-source servez-vous, modifiez, améliorez. Enjoy ;)
